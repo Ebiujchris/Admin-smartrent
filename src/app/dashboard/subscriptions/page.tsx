@@ -118,7 +118,7 @@ export default function SubscriptionsPage() {
             <p className="text-foreground font-semibold text-lg mb-1">{confirmModal.userName}</p>
             {confirmModal.newStatus === 'ACTIVE' && (
               <p className="text-xs text-muted-foreground mb-4">
-                This will set the subscription as ACTIVE for 1 year from today.
+                This will set the subscription as ACTIVE for 1 month from today.
               </p>
             )}
             <div className="flex gap-3 mt-6">
