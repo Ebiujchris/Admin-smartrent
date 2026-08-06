@@ -18,7 +18,17 @@ export default function MessagesPage() {
     setIsLoading(true);
     try {
       const res = await adminService.getMessages({ unreadOnly: filterUnread });
-      setMessages(res.messages);
+      // Group messages by sender - show only the first message from each sender
+      const grouped = new Map<string, any>();
+      
+      res.messages.forEach((msg: any) => {
+        const senderId = msg.sender.id;
+        if (!grouped.has(senderId)) {
+          grouped.set(senderId, msg);
+        }
+      });
+      
+      setMessages(Array.from(grouped.values()));
     } catch (error) {
       console.error("Failed to fetch messages", error);
     } finally {
@@ -81,16 +91,21 @@ export default function MessagesPage() {
           messages.map((msg) => (
             <Card key={msg.id} className={`bg-card/50 backdrop-blur-xl border ${msg.isRead ? 'border-border/50' : 'border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]'}`}>
               <CardHeader className="flex flex-row items-start justify-between pb-2">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-1">
                   <div className={`p-2 rounded-full ${msg.isRead ? 'bg-muted text-muted-foreground' : 'bg-emerald-500/20 text-emerald-500'}`}>
                     <MessageSquare className="h-5 w-5" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <CardTitle className="text-base flex items-center gap-2">
                       {msg.sender.fullName}
                       <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{msg.sender.role}</span>
                     </CardTitle>
-                    <div className="text-sm text-muted-foreground">{msg.subject || 'No Subject'} • {new Date(msg.createdAt).toLocaleString()}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {msg.replies && msg.replies.length > 0 
+                        ? `${msg.replies.length} ${msg.replies.length === 1 ? 'message' : 'messages'} • Latest: ${new Date(msg.replies[msg.replies.length - 1].createdAt).toLocaleString()}`
+                        : `${new Date(msg.createdAt).toLocaleString()}`
+                      }
+                    </div>
                   </div>
                 </div>
                 {!msg.isRead && (
@@ -100,26 +115,34 @@ export default function MessagesPage() {
                 )}
               </CardHeader>
               <CardContent>
-                <div className="p-4 bg-background/50 rounded-lg text-sm text-foreground whitespace-pre-wrap border border-border/50">
-                  {msg.content}
-                </div>
-
-                {/* Replies Thread */}
-                {msg.replies && msg.replies.length > 0 && (
-                  <div className="mt-4 space-y-3 pl-8 border-l-2 border-border/50">
-                    {msg.replies.map((reply: any) => (
-                      <div key={reply.id} className="p-3 bg-muted/30 rounded-lg border border-border/50">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-semibold text-emerald-500 flex items-center gap-1">
-                            <ShieldAlert className="h-3 w-3" /> {reply.sender.fullName} (Admin)
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">{new Date(reply.createdAt).toLocaleString()}</span>
-                        </div>
-                        <p className="text-sm text-foreground">{reply.content}</p>
-                      </div>
-                    ))}
+                <div className="space-y-3">
+                  {/* Show the original message */}
+                  <div className="p-4 bg-background/50 rounded-lg text-sm text-foreground whitespace-pre-wrap border border-border/50">
+                    {msg.content}
                   </div>
-                )}
+
+                  {/* Show ALL messages in the conversation thread */}
+                  {msg.replies && msg.replies.length > 0 && (
+                    <div className="mt-4 space-y-3 pl-4 border-l-2 border-border/50">
+                      {msg.replies.map((reply: any) => (
+                        <div key={reply.id} className="p-3 bg-muted/30 rounded-lg border border-border/50">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className={`text-xs font-semibold flex items-center gap-1 ${
+                              reply.sender.role === 'ADMIN' 
+                                ? 'text-emerald-500' 
+                                : 'text-slate-600'
+                            }`}>
+                              {reply.sender.role === 'ADMIN' && <ShieldAlert className="h-3 w-3" />}
+                              {reply.sender.fullName} {reply.sender.role === 'ADMIN' && '(Admin)'}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">{new Date(reply.createdAt).toLocaleString()}</span>
+                          </div>
+                          <p className="text-sm text-foreground">{reply.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </CardContent>
               <CardFooter className="pt-0">
                 {replyingTo === msg.id ? (
