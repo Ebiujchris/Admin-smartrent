@@ -43,7 +43,7 @@ export default function DashboardOverview() {
   const kpis = [
     { title: "Total Users", value: stats?.users.total, icon: Users, desc: `${stats?.users.landlords} Landlords, ${stats?.users.tenants} Tenants`, trend: "+12%", up: true },
     { title: "Active Properties", value: stats?.properties.total, icon: Building, desc: `${stats?.properties.occupied} occupied out of ${stats?.properties.units} units`, trend: "+5%", up: true },
-    { title: "Total Revenue", value: `UGX ${stats?.payments.totalRevenue.toLocaleString()}`, icon: Wallet, desc: `From ${stats?.payments.total} successful payments`, trend: "+18%", up: true },
+    { title: "Subscription Revenue", value: `UGX ${stats?.revenue.subscription.toLocaleString()}`, icon: Wallet, desc: `From ${stats?.subscriptions.active} active subscriptions`, trend: "+18%", up: true },
     { title: "Active Subscriptions", value: stats?.subscriptions.active, icon: CreditCard, desc: `${stats?.subscriptions.trial} on trial, ${stats?.subscriptions.expired} expired`, trend: "-2%", up: false },
   ];
 
@@ -132,20 +132,6 @@ export default function DashboardOverview() {
                   </div>
                   <div className="text-xs text-muted-foreground whitespace-nowrap">
                     {new Date(user.createdAt).toLocaleDateString()}
-                  </div>
-                </div>
-              ))}
-              {stats?.recentPayments.map((payment: any, i: number) => (
-                <div key={`p-${i}`} className="flex items-start gap-4">
-                  <div className="bg-emerald-500/10 p-2 rounded-full border border-emerald-500/20">
-                    <Wallet className="h-4 w-4 text-emerald-500" />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">Payment Received</p>
-                    <p className="text-xs text-muted-foreground">UGX {payment.amount.toLocaleString()} from {payment.tenant?.user?.fullName || 'Unknown'}</p>
-                  </div>
-                  <div className="text-xs text-muted-foreground whitespace-nowrap">
-                    {new Date(payment.createdAt).toLocaleDateString()}
                   </div>
                 </div>
               ))}
