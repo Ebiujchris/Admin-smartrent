@@ -43,7 +43,7 @@ export default function DashboardOverview() {
   const kpis = [
     { title: "Total Users", value: stats?.users.total, icon: Users, desc: `${stats?.users.landlords} Landlords, ${stats?.users.tenants} Tenants`, trend: "+12%", up: true },
     { title: "Active Properties", value: stats?.properties.total, icon: Building, desc: `${stats?.properties.occupied} occupied out of ${stats?.properties.units} units`, trend: "+5%", up: true },
-    { title: "Subscription Revenue", value: `UGX ${stats?.revenue.subscription.toLocaleString()}`, icon: Wallet, desc: `From ${stats?.subscriptions.active} active subscriptions`, trend: "+18%", up: true },
+    { title: "Subscription Revenue", value: `UGX ${(stats?.revenue?.subscription || 0).toLocaleString()}`, icon: Wallet, desc: `From ${stats?.subscriptions.active} active subscriptions`, trend: "+18%", up: true },
     { title: "Active Subscriptions", value: stats?.subscriptions.active, icon: CreditCard, desc: `${stats?.subscriptions.trial} on trial, ${stats?.subscriptions.expired} expired`, trend: "-2%", up: false },
   ];
 
