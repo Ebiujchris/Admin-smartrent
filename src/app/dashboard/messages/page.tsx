@@ -28,22 +28,37 @@ export default function MessagesPage() {
   const fetchMessages = async () => {
     setIsLoading(true);
     try {
+      console.log('[MESSAGES-PAGE] === FETCHING MESSAGES ===');
       const res = await adminService.getMessages({ unreadOnly: filterUnread });
-      console.log('[MESSAGES-PAGE] Fetched messages response:', res);
+      console.log('[MESSAGES-PAGE] Response received:', res);
+      console.log('[MESSAGES-PAGE] Response type:', typeof res);
+      console.log('[MESSAGES-PAGE] Response keys:', Object.keys(res || {}));
+      console.log('[MESSAGES-PAGE] res.messages exists:', !!res?.messages);
+      console.log('[MESSAGES-PAGE] res.messages type:', typeof res?.messages);
+      console.log('[MESSAGES-PAGE] res.messages is array:', Array.isArray(res?.messages));
+      console.log('[MESSAGES-PAGE] res.messages length:', res?.messages?.length);
       
       // Group messages by sender - collect ALL messages from each sender
       const grouped = new Map<string, any>();
       
-      if (!res.messages || res.messages.length === 0) {
-        console.log('[MESSAGES-PAGE] No messages returned');
+      if (!res?.messages || res.messages.length === 0) {
+        console.log('[MESSAGES-PAGE] No messages in response');
         setMessages([]);
         return;
       }
       
-      res.messages.forEach((msg: any) => {
+      console.log('[MESSAGES-PAGE] Processing', res.messages.length, 'messages');
+      res.messages.forEach((msg: any, index: number) => {
+        console.log(`[MESSAGES-PAGE] Message ${index}:`, {
+          id: msg.id,
+          senderName: msg.sender?.fullName,
+          senderId: msg.sender?.id,
+          content: msg.content?.substring(0, 50),
+        });
+        
         const senderId = msg.sender?.id;
         if (!senderId) {
-          console.warn('[MESSAGES-PAGE] Message missing sender info:', msg);
+          console.warn('[MESSAGES-PAGE] Message missing sender ID:', msg);
           return;
         }
         
@@ -65,10 +80,10 @@ export default function MessagesPage() {
       });
       
       const groupedMessages = Array.from(grouped.values());
-      console.log('[MESSAGES-PAGE] Grouped into conversations:', groupedMessages.length);
+      console.log('[MESSAGES-PAGE] Grouped into', groupedMessages.length, 'conversations');
       setMessages(groupedMessages);
     } catch (error) {
-      console.error('[MESSAGES-PAGE] Failed to fetch messages', error);
+      console.error('[MESSAGES-PAGE] Error fetching messages:', error);
       setMessages([]);
     } finally {
       setIsLoading(false);

@@ -52,32 +52,40 @@ export const adminService = {
   // Messages
   getMessages: async (params?: { page?: number; limit?: number; unreadOnly?: boolean }) => {
     try {
-      console.log('[ADMIN-FRONTEND] Calling /admin/messages with params:', params);
+      console.log('[ADMIN-FRONTEND] === STARTING getMessages ===');
+      console.log('[ADMIN-FRONTEND] Params:', params);
+      
       const res = await api.get('/admin/messages', { params });
-      console.log('[ADMIN-FRONTEND] Response status:', res.status);
-      console.log('[ADMIN-FRONTEND] Full Response object:', JSON.stringify(res.data));
       
-      // The response might be wrapped by the TransformInterceptor
-      let data = res.data;
+      console.log('[ADMIN-FRONTEND] Response received');
+      console.log('[ADMIN-FRONTEND] res.status:', res.status);
+      console.log('[ADMIN-FRONTEND] res.data type:', typeof res.data);
+      console.log('[ADMIN-FRONTEND] res.data:', res.data);
+      console.log('[ADMIN-FRONTEND] res.data keys:', Object.keys(res.data || {}));
+      console.log('[ADMIN-FRONTEND] res.data.messages exists:', !!res.data?.messages);
+      console.log('[ADMIN-FRONTEND] res.data.messages is array:', Array.isArray(res.data?.messages));
+      console.log('[ADMIN-FRONTEND] res.data.messages length:', res.data?.messages?.length);
       
-      // If response is wrapped in a data property, unwrap it
-      if (data && typeof data === 'object' && 'data' in data && !('messages' in data)) {
-        data = data.data;
-      }
-      
-      console.log('[ADMIN-FRONTEND] Processed data:', JSON.stringify(data));
-      
-      // Ensure response has messages array
-      if (!data || !data.messages) {
-        console.error('[ADMIN-FRONTEND] Response missing messages array:', data);
+      // The backend returns { messages: [...], pagination: {...} }
+      if (!res.data) {
+        console.error('[ADMIN-FRONTEND] res.data is null/undefined');
         return { messages: [], pagination: {} };
       }
       
-      return data;
+      if (!Array.isArray(res.data.messages)) {
+        console.error('[ADMIN-FRONTEND] res.data.messages is not an array:', res.data.messages);
+        return { messages: [], pagination: {} };
+      }
+      
+      console.log('[ADMIN-FRONTEND] === SUCCESS: Got messages, count:', res.data.messages.length);
+      return res.data;
     } catch (error: any) {
-      console.error('[ADMIN-FRONTEND] Error fetching messages:', error);
-      console.error('[ADMIN-FRONTEND] Error response:', error.response?.data);
-      console.error('[ADMIN-FRONTEND] Error status:', error.response?.status);
+      console.error('[ADMIN-FRONTEND] === ERROR THROWN ===');
+      console.error('[ADMIN-FRONTEND] Error message:', error.message);
+      if (error.response) {
+        console.error('[ADMIN-FRONTEND] Error response status:', error.response.status);
+        console.error('[ADMIN-FRONTEND] Error response data:', error.response.data);
+      }
       throw error;
     }
   },
