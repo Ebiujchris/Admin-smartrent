@@ -29,25 +29,33 @@ export default function MessagesPage() {
     setIsLoading(true);
     try {
       const res = await adminService.getMessages({ unreadOnly: filterUnread });
+      console.log('[MESSAGES-PAGE] Fetched messages response:', res);
       
       // Group messages by sender - collect ALL messages from each sender
       const grouped = new Map<string, any>();
       
+      if (!res.messages || res.messages.length === 0) {
+        console.log('[MESSAGES-PAGE] No messages returned');
+        setMessages([]);
+        return;
+      }
+      
       res.messages.forEach((msg: any) => {
-        const senderId = msg.sender.id;
+        const senderId = msg.sender?.id;
+        if (!senderId) {
+          console.warn('[MESSAGES-PAGE] Message missing sender info:', msg);
+          return;
+        }
         
         if (!grouped.has(senderId)) {
-          // First time seeing this sender - use this message as the base
           grouped.set(senderId, {
             ...msg,
-            allMessages: [msg], // Store all messages from this sender
+            allMessages: [msg],
           });
         } else {
-          // Add this message to the sender's collection
           const existing = grouped.get(senderId);
           existing.allMessages.push(msg);
           
-          // Update the "latest" message reference if this one is newer
           if (new Date(msg.createdAt) > new Date(existing.createdAt)) {
             existing.createdAt = msg.createdAt;
             existing.content = msg.content;
@@ -56,9 +64,12 @@ export default function MessagesPage() {
         }
       });
       
-      setMessages(Array.from(grouped.values()));
+      const groupedMessages = Array.from(grouped.values());
+      console.log('[MESSAGES-PAGE] Grouped into conversations:', groupedMessages.length);
+      setMessages(groupedMessages);
     } catch (error) {
-      console.error("Failed to fetch messages", error);
+      console.error('[MESSAGES-PAGE] Failed to fetch messages', error);
+      setMessages([]);
     } finally {
       setIsLoading(false);
     }

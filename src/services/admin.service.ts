@@ -51,10 +51,25 @@ export const adminService = {
 
   // Messages
   getMessages: async (params?: { page?: number; limit?: number; unreadOnly?: boolean }) => {
-    console.log('[ADMIN-FRONTEND] Calling /admin/messages with params:', params);
-    const res = await api.get('/admin/messages', { params });
-    console.log('[ADMIN-FRONTEND] Response:', res.data);
-    return res.data;
+    try {
+      console.log('[ADMIN-FRONTEND] Calling /admin/messages with params:', params);
+      const res = await api.get('/admin/messages', { params });
+      console.log('[ADMIN-FRONTEND] Response status:', res.status);
+      console.log('[ADMIN-FRONTEND] Response data:', res.data);
+      
+      // Ensure response has messages array
+      if (!res.data.messages) {
+        console.error('[ADMIN-FRONTEND] Response missing messages array:', res.data);
+        return { messages: [], pagination: {} };
+      }
+      
+      return res.data;
+    } catch (error: any) {
+      console.error('[ADMIN-FRONTEND] Error fetching messages:', error);
+      console.error('[ADMIN-FRONTEND] Error response:', error.response?.data);
+      console.error('[ADMIN-FRONTEND] Error status:', error.response?.status);
+      throw error;
+    }
   },
 
   markMessageAsRead: async (id: string) => {
