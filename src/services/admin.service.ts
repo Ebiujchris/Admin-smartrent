@@ -55,15 +55,25 @@ export const adminService = {
       console.log('[ADMIN-FRONTEND] Calling /admin/messages with params:', params);
       const res = await api.get('/admin/messages', { params });
       console.log('[ADMIN-FRONTEND] Response status:', res.status);
-      console.log('[ADMIN-FRONTEND] Response data:', res.data);
+      console.log('[ADMIN-FRONTEND] Full Response object:', JSON.stringify(res.data));
+      
+      // The response might be wrapped by the TransformInterceptor
+      let data = res.data;
+      
+      // If response is wrapped in a data property, unwrap it
+      if (data && typeof data === 'object' && 'data' in data && !('messages' in data)) {
+        data = data.data;
+      }
+      
+      console.log('[ADMIN-FRONTEND] Processed data:', JSON.stringify(data));
       
       // Ensure response has messages array
-      if (!res.data.messages) {
-        console.error('[ADMIN-FRONTEND] Response missing messages array:', res.data);
+      if (!data || !data.messages) {
+        console.error('[ADMIN-FRONTEND] Response missing messages array:', data);
         return { messages: [], pagination: {} };
       }
       
-      return res.data;
+      return data;
     } catch (error: any) {
       console.error('[ADMIN-FRONTEND] Error fetching messages:', error);
       console.error('[ADMIN-FRONTEND] Error response:', error.response?.data);
