@@ -18,13 +18,30 @@ export default function MessagesPage() {
     setIsLoading(true);
     try {
       const res = await adminService.getMessages({ unreadOnly: filterUnread });
-      // Group messages by sender - show only the first message from each sender
+      
+      // Group messages by sender - collect ALL messages from each sender
       const grouped = new Map<string, any>();
       
       res.messages.forEach((msg: any) => {
         const senderId = msg.sender.id;
+        
         if (!grouped.has(senderId)) {
-          grouped.set(senderId, msg);
+          // First time seeing this sender - use this message as the base
+          grouped.set(senderId, {
+            ...msg,
+            allMessages: [msg], // Store all messages from this sender
+          });
+        } else {
+          // Add this message to the sender's collection
+          const existing = grouped.get(senderId);
+          existing.allMessages.push(msg);
+          
+          // Update the "latest" message reference if this one is newer
+          if (new Date(msg.createdAt) > new Date(existing.createdAt)) {
+            existing.createdAt = msg.createdAt;
+            existing.content = msg.content;
+            existing.isRead = msg.isRead;
+          }
         }
       });
       
@@ -101,10 +118,13 @@ export default function MessagesPage() {
                       <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{msg.sender.role}</span>
                     </CardTitle>
                     <div className="text-sm text-muted-foreground">
-                      {msg.replies && msg.replies.length > 0 
-                        ? `${msg.replies.length} ${msg.replies.length === 1 ? 'message' : 'messages'} • Latest: ${new Date(msg.replies[msg.replies.length - 1].createdAt).toLocaleString()}`
-                        : `${new Date(msg.createdAt).toLocaleString()}`
-                      }
+                      {(() => {
+                        const totalMessages = (msg.allMessages?.length || 0) + (msg.replies?.length || 0);
+                        const latestTime = msg.replies && msg.replies.length > 0 
+                          ? new Date(msg.replies[msg.replies.length - 1].createdAt)
+                          : new Date(msg.createdAt);
+                        return `${totalMessages} ${totalMessages === 1 ? 'message' : 'messages'} • Latest: ${latestTime.toLocaleString()}`;
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -116,12 +136,18 @@ export default function MessagesPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                  {/* Show the original message */}
-                  <div className="p-4 bg-background/50 rounded-lg text-sm text-foreground whitespace-pre-wrap border border-border/50">
-                    {msg.content}
-                  </div>
+                  {/* Show ALL messages from this sender */}
+                  {msg.allMessages && msg.allMessages.map((message: any, index: number) => (
+                    <div key={message.id} className="p-4 bg-background/50 rounded-lg text-sm text-foreground whitespace-pre-wrap border border-border/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-slate-600">{message.sender?.fullName}</span>
+                        <span className="text-[10px] text-muted-foreground">{new Date(message.createdAt).toLocaleString()}</span>
+                      </div>
+                      <p>{message.content}</p>
+                    </div>
+                  ))}
 
-                  {/* Show ALL messages in the conversation thread */}
+                  {/* Show all replies in the conversation thread */}
                   {msg.replies && msg.replies.length > 0 && (
                     <div className="mt-4 space-y-3 pl-4 border-l-2 border-border/50">
                       {msg.replies.map((reply: any) => (
