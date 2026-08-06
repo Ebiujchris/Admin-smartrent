@@ -115,7 +115,7 @@ export default function MessagesPage() {
                 )}
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                   {/* Show the original message */}
                   <div className="p-4 bg-background/50 rounded-lg text-sm text-foreground whitespace-pre-wrap border border-border/50">
                     {msg.content}
