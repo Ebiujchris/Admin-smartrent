@@ -51,7 +51,9 @@ export const adminService = {
 
   // Messages
   getMessages: async (params?: { page?: number; limit?: number; unreadOnly?: boolean }) => {
+    console.log('[ADMIN-FRONTEND] Calling /admin/messages with params:', params);
     const res = await api.get('/admin/messages', { params });
+    console.log('[ADMIN-FRONTEND] Response:', res.data);
     return res.data;
   },
 

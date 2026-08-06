@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Always use the correct backend URL
-const API_URL = 'https://smartrent-be-9lj6.vercel.app';
+// Use local backend in development, production URL in production
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export const api = axios.create({
   baseURL: API_URL,
