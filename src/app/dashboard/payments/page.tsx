@@ -49,14 +49,14 @@ export default function PaymentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Payments</h1>
-          <p className="text-muted-foreground">Monitor platform-wide payment activity.</p>
+          <p className="text-muted-foreground">Monitor tenant rental payments processed on the platform.</p>
         </div>
         <div className="flex items-center gap-3 bg-card/50 backdrop-blur-xl border border-border/50 px-4 py-2 rounded-lg">
-          <div className="p-2 bg-emerald-500/10 rounded-full">
-            <Wallet className="h-5 w-5 text-emerald-500" />
+          <div className="p-2 bg-blue-500/10 rounded-full">
+            <Wallet className="h-5 w-5 text-blue-500" />
           </div>
           <div>
-            <div className="text-xs text-muted-foreground">Total Revenue</div>
+            <div className="text-xs text-muted-foreground">Total Payments Processed</div>
             <div className="font-bold text-foreground">UGX {totalRevenue.toLocaleString()}</div>
           </div>
         </div>
